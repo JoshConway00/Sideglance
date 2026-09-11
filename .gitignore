@@ -1,0 +1,23 @@
+/build/
+.DS_Store
+.env
+.env.*
+!.env.example
+*.log
+*.jsonl
+/.codex/
+/.agents/
+
+# Local exports, credentials and application state
+*.sqlite
+*.sqlite-*
+*.db
+*.bundle
+*.p12
+*.pem
+*.key
+*.mobileprovision
+*.xcuserstate
+xcuserdata/
+.envrc
+/private/
