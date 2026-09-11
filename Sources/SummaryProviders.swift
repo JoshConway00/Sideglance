@@ -12,7 +12,7 @@ func intelligenceAvailability() -> String {
         case .available: return "On-device model ready"
         case .unavailable(.appleIntelligenceNotEnabled): return "Enable Apple Intelligence in System Settings"
         case .unavailable(.deviceNotEligible): return "Apple Intelligence is not supported on this Mac"
-        case .unavailable(.modelNotReady): return "Apple Intelligence model is still downloading"
+        case .unavailable(.modelNotReady): return "Apple Intelligence model is not ready yet"
         case .unavailable: return "On-device model unavailable"
         }
     }

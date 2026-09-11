@@ -1,0 +1,49 @@
+name: Prepare draft release
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Version tag matching the app version (for example v0.1.0)
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: draft-release
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: macos-26
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Build and test
+        run: ./build.sh
+      - name: Package and create draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' build/Sideglance.app/Contents/Info.plist)
+          if [[ "$RELEASE_TAG" != "v$VERSION" ]]; then
+            echo 'Release tag must match the app version in build.sh.' >&2
+            exit 1
+          fi
+          mkdir -p build/release
+          cp -R build/Sideglance.app build/release/
+          cp LICENSE README.md build/release/
+          ditto -c -k --sequesterRsrc --keepParent build/release "build/Sideglance-$RELEASE_TAG-arm64.zip"
+          (cd build && shasum -a 256 "Sideglance-$RELEASE_TAG-arm64.zip" > SHA256SUMS.txt)
+          cat > build/release-notes.md <<'NOTES'
+          Development prerelease for Apple Silicon Macs.
+
+          This build is ad-hoc signed, not Developer ID signed or notarized. Cross-machine installation and macOS 14 runtime still need verification. See the included README for setup and limitations.
+          NOTES
+          gh release create "$RELEASE_TAG" "build/Sideglance-$RELEASE_TAG-arm64.zip" build/SHA256SUMS.txt --target "$GITHUB_SHA" --title "Sideglance $RELEASE_TAG" --draft --prerelease --notes-file build/release-notes.md

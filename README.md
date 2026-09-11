@@ -86,3 +86,7 @@ Choose **Review output quality…** from the menu bar to browse retained notific
 Switch between **Activity summary**, **Task heading** and **Live status** to compare source text with displayed text. **How it changed** distinguishes model-generated labels from local excerpts and task-title fallbacks, shows the recorded model/reasoning and duration, and exposes exact input/instructions/raw output in an expandable section. Each version uses only traces recorded by that point, so later model changes are not applied to earlier displays. Missing/rotated traces are marked instead of guessed.
 
 The viewer reads both retained log files locally. Refresh is manual by default to keep navigation steady; optional **Live refresh** checks every two seconds. The displayed card preview is recorded text, not a screenshot of pixel clipping. No log contents are uploaded by the viewer.
+
+## Contributing and licence
+
+Sideglance is available under the [MIT licence](LICENSE). See [CONTRIBUTING.md](CONTRIBUTING.md) for contributing and [GitHub maintenance](docs/github-maintenance.md) for checks, repository settings and the manual draft-release process.

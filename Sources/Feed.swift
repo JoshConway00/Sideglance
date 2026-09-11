@@ -32,6 +32,8 @@ import SwiftUI
         return label
     }
     @Published var titleStatus = intelligenceAvailability()
+    @Published var summaryAvailabilityNotice: String?
+    private var lastUnavailableSummaryState: String?
     private var intentionKey: String?
     private var narrativeBatch = NarrativeBatch()
     private var lastGroup: NarrativeGroup?
@@ -48,6 +50,7 @@ import SwiftUI
     private func invalidateTitles() {
         titleJob?.cancel(); titleJob = nil; titleGeneration = UUID()
         titles = [:]; promptTitles = [:]; attemptedTitle = nil
+        summaryAvailabilityNotice = nil; lastUnavailableSummaryState = nil
     }
     func resetTitles() {
         invalidateTitles()
@@ -100,10 +103,19 @@ import SwiftUI
         guard key != nil || requestKey != nil else { return }
         let jobKey = (requestKey ?? "") + ":" + (key ?? "")
         guard attemptedTitle != jobKey else { return }
-        attemptedTitle = jobKey
         let provider = summaryProvider
         titleStatus = provider == .apple ? intelligenceAvailability() : (CodexSummary.executable == nil ? "Install Codex and sign in with ChatGPT" : "Summarising with Codex · uses allowance")
-        guard provider == .codex ? CodexSummary.executable != nil : titleStatus == "On-device model ready" else { return }
+        guard provider == .codex ? CodexSummary.executable != nil : titleStatus == "On-device model ready" else {
+            summaryAvailabilityNotice = titleStatus
+            if lastUnavailableSummaryState != titleStatus {
+                QualityLog.shared.record("summary_unavailable", ["task_id": task.id, "provider": provider.rawValue, "reason": titleStatus, "fallback": "local excerpts; no model request made"])
+                lastUnavailableSummaryState = titleStatus
+            }
+            // Do not mark this work attempted: retry availability on later polls.
+            return
+        }
+        summaryAvailabilityNotice = nil; lastUnavailableSummaryState = nil
+        attemptedTitle = jobKey
         if let readyGroup { lastGroup = readyGroup; narrativeBatch.consume() }
         let generation = titleGeneration
         titleJob = Task { [weak self] in

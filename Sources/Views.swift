@@ -93,6 +93,12 @@ struct Overlay: View {
                     .opacity(entry.id == visible.last?.id ? 1 : 0.65)
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }
+            if feed.intentionTitles, let notice = feed.summaryAvailabilityNotice {
+                Text("Showing local text · " + notice)
+                    .font(.system(size: 10)).foregroundStyle(.orange)
+                    .lineLimit(2).padding(8)
+                    .background(.black.opacity(0.65), in: RoundedRectangle(cornerRadius: 8))
+            }
             if feed.task.id.isEmpty || feed.showCompletionBadge || feed.status == .stopped || feed.inputRequested || feed.editing || feed.connection == .disconnected {
                 HStack(spacing: 5) {
                     Image(systemName: feed.connection == .disconnected ? "wifi.slash" : (feed.status == .finished ? "checkmark.circle.fill" : (feed.inputRequested ? "questionmark.circle.fill" : "waveform.path")))
