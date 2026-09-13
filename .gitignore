@@ -21,3 +21,6 @@
 xcuserdata/
 .envrc
 /private/
+
+# Private local setup audit and rollback record
+/docs/codex-setup.md
